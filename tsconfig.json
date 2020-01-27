@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+      "target": "ES6",
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "allowJs": true,
+      "inlineSourceMap": true,
+      "inlineSources": true,
+      "emitDecoratorMetadata": true,
+      "experimentalDecorators": true,
+      "lib": [ "es2016", "dom" ],
+      "noImplicitAny": false,
+      "suppressImplicitAnyIndexErrors": true,
+      "outDir": "./"
+    },
+    "exclude": [
+      "node_modules",
+      "**/*.spec.ts",    
+      "dist",
+      "public",
+      "typings",
+      "log",
+      "test",
+      "**/node_modules",
+      "**/assets/libs",
+      "**/js-old" 
+    ]
+  }
+  
