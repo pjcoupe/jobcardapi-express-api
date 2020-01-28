@@ -6,8 +6,10 @@ var router = express.Router();
 
 router.get('/images/:id', async (req: Express.Request, res: Express.Response, next) =>{
 	const jobCard = await PlatingService.retrieve(req.params.id);
+	
 	if (jobCard){
-		return res.status(200).json(await PlatingService.getPictures(jobCard));
+		let index: number = Number(req.query.q || "0")
+		return res.status(200).json(await PlatingService.getPictures(jobCard, index));
 	} else {
 		return res.status(400).json({error: "No such jobID"});
 	}
