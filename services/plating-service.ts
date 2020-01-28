@@ -26,11 +26,13 @@ const jobCardVSchema = {
 /* static jobCardModel service class */
 export class PlatingService {
 
-	static async getPictures(job: JobCardModel): Promise<Array<string>>{
+	static async getPictures(job: JobCardModel, index: number = 0): Promise<string>{
 		if (job && job.jobID){
-			return await MongoService.getInstance().getJobImages(job);
+			let base64 = await MongoService.getInstance().getJobImages(job, index);
+			return base64;
+		} else {
+			return "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 		}
-		return [];
 	}
 	static async search(body: { jobDate?: { $gte: string | Date, $lte: string | Date } }): Promise<Array<JobCardModel>> {
 		if (body.jobDate) {
