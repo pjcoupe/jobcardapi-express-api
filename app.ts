@@ -44,6 +44,6 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.use('/api/platingSearch', plating);
+app.use('/api/jobcard', plating);
 
 module.exports = app;

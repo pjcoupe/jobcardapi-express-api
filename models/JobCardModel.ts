@@ -1,7 +1,60 @@
 import { ObjectID } from "mongodb";
+import { ValidCollection } from "../mongo-service";
 
-export class JobCardModel {
+export abstract class BaseModel {
     _id: ObjectID;
+
+    abstract collectionName(): ValidCollection;
+    constructor(obj: any = null){
+        if (obj && typeof obj === "object") {
+            Object.assign(this, obj);
+            let keys = Object.keys(this);
+            for (let key of keys){
+                let value = this[key];
+                if (value && typeof value !== "function"){
+                    if (key.includes("Date")){
+                        this[key] = new Date(value);
+                    }
+                }
+            }
+            if (typeof this._id === "string"){
+                this._id = new ObjectID(this._id);
+            }
+        }
+    }
+}
+export class FussyCustomerModel extends BaseModel{
+    
+    phoneOrEmail: string;
+
+    constructor(obj: any = null) {
+        super(obj);
+       
+    }
+    collectionName(): ValidCollection {
+        return "fussyCustomer";
+    }
+}
+
+export class SettingsModel extends BaseModel{
+    
+    emailAddress: string;
+    emailPassword: string;
+    emailName: string;
+    emailPort: string;
+    emailDomain: string;
+    pricing: {[button: string]: string};
+
+    constructor(obj: any = null) {
+        super(obj);
+       
+    }
+    collectionName(): ValidCollection {
+        return "settings";
+    }
+}
+export class JobCardModel extends BaseModel{
+
     jobID: number;
     jobDate: Date = new Date();
     jobCustomer: string = null;
@@ -181,22 +234,11 @@ export class JobCardModel {
     jobCollected: string = null;
     jobBusinessName: string = null;
 
-   
     constructor(obj: any = null) {
-        if (obj && typeof obj === "object") {
-            Object.assign(this, obj);
-            let keys = Object.keys(this);
-            for (let key of keys){
-                let value = this[key];
-                if (value && typeof value !== "function"){
-                    if (key.includes("Date")){
-                        this[key] = new Date(value);
-                    }
-                }
-            }
-            if (typeof this._id === "string"){
-                this._id = new ObjectID(this._id);
-            }
-        }
+        super(obj);
+    }
+
+    collectionName(): ValidCollection {
+        return "jobCard";
     }
 }

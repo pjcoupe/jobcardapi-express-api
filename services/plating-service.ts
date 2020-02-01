@@ -1,6 +1,6 @@
-import { JobCardModel } from "../models/JobCardModel";
+import { JobCardModel, BaseModel } from "../models/JobCardModel";
 import *  as MongoDB from "mongodb";
-import { MongoService } from '../mongo-service';
+import { MongoService, JobImagesType, ValidDB, ValidCollection, DB_NAMES, COLLECTION_NAMES } from '../mongo-service';
 let Validator = require("fastest-validator");
 
 /* create an instance of the validator */
@@ -26,20 +26,35 @@ const jobCardVSchema = {
 /* static jobCardModel service class */
 export class PlatingService {
 
-	static async getPictures(job: JobCardModel, index: number = 0): Promise<string>{
+	static async getPictures(job: JobCardModel, index: number = 0): Promise<JobImagesType>{
+		let ret: JobImagesType = {base64: null, fileCount: 0, fileIndex: index};
 		if (job && job.jobID){
-			let base64 = await MongoService.getInstance().getJobImages(job, index);
-			return base64;
+			ret = await MongoService.getInstance().getJobImages(job, index);			
 		} else {
-			return "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+			ret.error = "No job specified";
 		}
+		return ret;
 	}
-	static async search(body: { jobDate?: { $gte: string | Date, $lte: string | Date } }): Promise<Array<JobCardModel>> {
+
+	static async search(body: {db: ValidDB, collection: ValidCollection, limit?: number, sort?: {[field:string]: -1 | 1}, jobDate?: { $gte: string | Date, $lte: string | Date } }): Promise<Array<BaseModel>> {
+		let db: ValidDB = body.db;
+		delete body.db;
+		let collection: ValidCollection = body.collection;
+		delete body.collection;
 		if (body.jobDate) {
 			body.jobDate.$gte = new Date(body.jobDate.$gte);
 			body.jobDate.$lte = new Date(body.jobDate.$lte);
 		}
-		let results = await MongoService.getInstance().findJobCard(body);
+
+		if (DB_NAMES.indexOf(db)  === -1 || COLLECTION_NAMES.indexOf(collection) === -1){
+			throw new Error("Invalid db or collection");
+		}
+		if (db === "settings" && collection !== "settings"){
+			throw new Error("settings db has only settings collection");
+		}
+		let limit = body.limit || 50;
+		let sort = body.sort || {_id: -1};
+		let results = await MongoService.getInstance().find(db, collection, body, limit, sort);
 		if (!results || !results.length) {
 			for (let key in body) {
 				let value = body[key];
@@ -50,63 +65,32 @@ export class PlatingService {
 					body[key] = new RegExp("" + value);
 				}
 			}
-			results = await MongoService.getInstance().findJobCard(body);
+			results = await MongoService.getInstance().find(db, collection, body, limit, sort);
 		}
 		return results;
 	}
-	static create(data) {
 
-		var vres = jobCardValidator.validate(data, jobCardVSchema);
 
-		/* validation failed */
-		if (!(vres === true)) {
-			let errors = {}, item;
 
-			for (const index in vres) {
-				item = vres[index];
-
-				errors[item.field] = item.message;
-			}
-
-			throw {
-				name: "ValidationError",
-				message: errors
-			};
-		}
-
-		let jobCardModel = new JobCardModel(data);
-
-		return jobCardModel;
+	static async retrieve(db: ValidDB, collection: ValidCollection, primaryKeyValue: any): Promise<BaseModel> {
+		return await MongoService.getInstance().findPrimary(db, collection, primaryKeyValue);
 	}
 
-	static async retrieve(uid): Promise<JobCardModel> {
-		if (uid) {
-			let results = await MongoService.getInstance().findJobCard({jobID: Number(uid)});
-			if (results && results.length){
-				return new JobCardModel(results[0]);
-			}
-			return null;
-		}
-		else {
-			throw new Error('Unable to retrieve a jobCardModel by (uid:' + uid + ')');
-		}
+
+	static async patch(db: ValidDB, collection: ValidCollection, primaryKeyValue: any, body: any): Promise<BaseModel> {
+		return await MongoService.getInstance().findAndModify(db, collection, primaryKeyValue, body);		
 	}
 
-	static update(uid, data) {
-		if (false) {
-
-		}
-		else {
-			throw new Error('Unable to retrieve a jobCardModel by (uid:' + uid + ')');
-		}
+	static async create(db: ValidDB, collection: ValidCollection, body: any): Promise<BaseModel> {
+		return await MongoService.getInstance().insertOne(db, collection, body);		
 	}
 
-	static delete(uid) {
-		if (false) {
-
-		}
-		else {
-			throw new Error('Unable to retrieve a jobCardModel by (uid:' + uid + ')');
-		}
+	static async delete(db: ValidDB, collection: ValidCollection, primaryKeyValue: any): Promise<void> {
+		let hasDelete = false;
+		if (hasDelete){
+			await MongoService.getInstance().deletePrimary(db, collection, primaryKeyValue);
+		} else {
+			throw new Error("Delete not implemented");
+		}		
 	}
 }
