@@ -43,11 +43,11 @@ export class MongoService {
         //return Buffer.alloc(image.length * 2, image).toString('base64');
     }
 
-    async getJobImages(job: JobCardModel, index: number, resizeWidth?: number): Promise<JobImagesType> {
+    async getJobImages(jobID: number, jobDate: Date, index: number, resizeWidth?: number): Promise<JobImagesType> {
         const retVal: JobImagesType = {fileIndex: index, fileCount: 0, base64: "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"};
 
         try {
-            let files = await this.getJobIDPicturesFileNames(job.jobID, job.jobDate);            
+            let files = await this.getJobIDPicturesFileNames(jobID, jobDate);            
             retVal.fileCount = files.length;
             index = retVal.fileCount ? index % retVal.fileCount : 0;
             retVal.fileIndex = index;

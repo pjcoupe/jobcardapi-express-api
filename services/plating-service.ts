@@ -26,21 +26,18 @@ const jobCardVSchema = {
 /* static jobCardModel service class */
 export class PlatingService {
 
-	static async getPictures(job: JobCardModel, index: number = 0): Promise<JobImagesType>{
+	static async getPictures(jobID: number, jobDate: Date, index: number = 0): Promise<JobImagesType>{
 		let ret: JobImagesType = {base64: null, fileCount: 0, fileIndex: index};
-		if (job && job.jobID){
-			ret = await MongoService.getInstance().getJobImages(job, index);			
+		if (jobID && jobDate){
+			ret = await MongoService.getInstance().getJobImages(jobID, jobDate, index);			
 		} else {
 			ret.error = "No job specified";
 		}
 		return ret;
 	}
 
-	static async search(body: {db: ValidDB, collection: ValidCollection, limit?: number, sort?: {[field:string]: -1 | 1}, jobDate?: { $gte: string | Date, $lte: string | Date } }): Promise<Array<BaseModel>> {
-		let db: ValidDB = body.db;
-		delete body.db;
-		let collection: ValidCollection = body.collection;
-		delete body.collection;
+	static async search(db: ValidDB, collection: ValidCollection, body: {limit?: number, sort?: {[field:string]: -1 | 1}, jobDate?: { $gte: string | Date, $lte: string | Date } }): Promise<Array<BaseModel>> {
+
 		if (body.jobDate) {
 			body.jobDate.$gte = new Date(body.jobDate.$gte);
 			body.jobDate.$lte = new Date(body.jobDate.$lte);

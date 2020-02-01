@@ -11,9 +11,12 @@
       "lib": [ "es2016", "dom" ],
       "noImplicitAny": false,
       "suppressImplicitAnyIndexErrors": true,
-      "outDir": "./"
+      "outDir": "../"
     },
     "exclude": [
+      "bin/www.js",
+      "jobcardapi-express-api",
+      "jobcardui",
       "node_modules",
       "**/*.spec.ts",    
       "dist",

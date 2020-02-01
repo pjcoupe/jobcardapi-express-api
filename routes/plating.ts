@@ -1,16 +1,16 @@
 import * as Express from "express";
 import { PlatingService } from "../services/plating-service";
 import { JobCardModel } from '../../jobcardui/src/app/models/JobCardModel';
-import * as express from "express";
-//var express = require('express');
+//import * as express from "express";
+var express = require('express');
 
 var router = express.Router();
 
 router.get('/images/:id', async (req: Express.Request, res: Express.Response, next) =>{
-	const model = await PlatingService.retrieve(req.query.db, req.query.collection, req.params.id);	
-	if (model instanceof JobCardModel){
+	const model = await PlatingService.retrieve(req.query.db, req.query.collection, req.params.id) as unknown as JobCardModel;	
+  if (model.jobID && model.jobDate){
 		let index: number = Number(req.query.q || "0")
-		return res.status(200).json(await PlatingService.getPictures(model, index));
+		return res.status(200).json(await PlatingService.getPictures(model.jobID, model.jobDate, index));
 	} else {
 		return res.status(400).json({error: "No picture for db/collection"});
 	}
@@ -27,7 +27,7 @@ router.post('/search', async (req: Express.Request, res: Express.Response, next)
 {
 	try
 	{
-		const models = await PlatingService.search(req.body);		
+		const models = await PlatingService.search(req.query.db, req.query.collection, req.body);		
 		return res.status(201).json(models);
 	}
 	catch(err)

@@ -1,1 +1,5 @@
 node_modules
+jobcardapi-express-api/node_modules
+**/*.js
+routes/*.js
+
